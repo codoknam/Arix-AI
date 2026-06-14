@@ -1,112 +1,644 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Arix! v1.0</title>
-<meta name="theme-color" content="#000080">
-<link rel="manifest" href="manifest.json">
-<style>
-:root{
---navy:#000080;
---bg:#f5f5f5;
---button-text:#fff;
-}
-body{margin:0;font-family:sans-serif;background:var(--bg);display:flex;height:100vh}
-.sidebar{width:260px;background:var(--navy);color:white;padding:15px;display:flex;flex-direction:column}
-.chat-area{flex:1;display:flex;flex-direction:column}
-.header{padding:15px;background:white;border-bottom:1px solid #ddd}
-.messages{flex:1;overflow:auto;padding:20px}
-.message{padding:12px;border-radius:12px;margin:8px 0;max-width:75%}
-.user{background:#dff3ff;margin-left:auto}
-.ai{background:white}
-.input-area{display:flex;padding:10px;background:white;border-top:1px solid #ddd}
-textarea{flex:1;resize:none;padding:10px}
-button{cursor:pointer}
-#send{margin-left:8px}
-.version{margin-top:auto;opacity:.7;font-size:12px;text-align:center}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arix! - Your AI Companion</title>
+    <style>
+        /* CSS Reset & Variables */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --navy-dark: #000080; /* Signature navy blue */
+            --navy-light: #1A237E; /* Slightly lighter navy for depth */
+            --accent-yellow: #FFD700; /* Playful yellow */
+            --accent-blue: #ADD8E6; /* Light blue for accents */
+            --background-light: #F0F2F5; /* Main chat area background */
+            --sidebar-bg: var(--navy-dark);
+            --text-light: #ffffff;
+            --text-dark: #333333;
+            --user-message-bg: #e0f2f7; /* Light blue for user messages */
+            --ai-message-bg: #e8f5e9; /* Light green for AI messages */
+            --border-color: #ddd;
+            --button-primary-bg: #4285F4; /* A vibrant blue for main buttons */
+            --button-secondary-bg: #607d8b; /* A subtle grey for secondary actions */
+            --hover-light: #e0e0e0;
+            --hover-dark: #2a358c;
+            --active-item-bg: #3f51b5; /* Deeper blue for active states */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background-color: var(--background-light);
+            display: flex;
+            height: 100vh;
+            overflow: hidden; /* Prevent body scroll, let specific areas scroll */
+        }
+
+        /* Main Container Layout */
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 100; /* Ensure sidebar is above main content on mobile */
+            transition: transform 0.3s ease-in-out;
+            flex-shrink: 0;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo h1 {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--text-light);
+            letter-spacing: 0.5px;
+        }
+
+        .new-chat-button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            background-color: var(--button-primary-bg);
+            color: var(--button-text);
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .new-chat-button:hover {
+            background-color: var(--hover-dark);
+        }
+        .new-chat-button svg {
+            stroke: var(--text-light);
+        }
+
+        .chat-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+        .chat-list::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .chat-list h2 {
+            font-size: 1em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding-left: 5px;
+        }
+
+        .chat-list ul {
+            list-style: none;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background-color: var(--navy-light);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-size: 0.95em;
+        }
+
+        .chat-item:hover {
+            background-color: var(--hover-dark);
+        }
+
+        .chat-item.active {
+            background-color: var(--active-item-bg);
+            font-weight: 600;
+        }
+
+        .chat-item span {
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-light);
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+            opacity: 0; /* Hidden by default */
+            transition: opacity 0.2s ease;
+        }
+
+        .chat-item:hover .chat-actions,
+        .chat-item.active .chat-actions {
+            opacity: 1; /* Show on hover or active */
+        }
+
+        .chat-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            transition: background-color 0.2s ease;
+        }
+        .chat-actions button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .chat-actions button svg {
+            stroke: var(--text-light);
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Chat Area Styling */
+        .chat-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--background-light);
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            background-color: var(--text-light);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+
+        .chat-header h2 {
+            font-size: 1.3em;
+            color: var(--text-dark);
+        }
+
+        .mobile-menu-toggle {
+            display: none; /* Hidden on desktop */
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .mobile-menu-toggle svg {
+            stroke: var(--text-dark);
+        }
+        .mobile-menu-toggle:hover {
+            background-color: var(--hover-light);
+        }
+
+
+        .messages-display {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.1' fill-rule='evenodd'%3E%3Cpath d='M9 10L7 8h4L9 10zm-2 1v1l3 3V9z'/%3E%3Cpath d='M6 2c.2 0 .4.018.602.046L3.2 5.4c-.16-.017-.306-.046-.46-.046-2.209 0-4 1.791-4 4s1.791 4 4 4 4-1.791 4-4a4.015 4.015 0 00-.046-.602L8.6 3.2c.017.16.046.306.046.46 0 2.209-1.791 4-4 4s-4-1.791-4-4 1.791-4 4-4z'/%3E%3C/g%3E%3C/svg%3E"); /* Subtle background pattern */
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 15px;
+        }
+
+        .message.user-message {
+            justify-content: flex-end;
+        }
+
+        .message.ai-message {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 20px;
+            line-height: 1.5;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .user-message .message-content {
+            background-color: var(--user-message-bg);
+            color: var(--text-dark);
+            border-bottom-right-radius: 5px; /* Softer edge */
+        }
+
+        .ai-message .message-content {
+            background-color: var(--ai-message-bg);
+            color: var(--text-dark);
+            border-bottom-left-radius: 5px; /* Softer edge */
+        }
+
+        .input-area {
+            display: flex;
+            align-items: flex-end; /* Align items to the bottom */
+            padding: 15px 20px;
+            background-color: var(--text-light);
+            border-top: 1px solid var(--border-color);
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .image-upload-button, #send-button {
+            background-color: var(--button-primary-bg);
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .image-upload-button:hover, #send-button:hover {
+            background-color: var(--hover-dark);
+        }
+
+        .image-upload-button svg, #send-button svg {
+            stroke: var(--button-text);
+            width: 24px;
+            height: 24px;
+        }
+
+        #user-input {
+            flex-grow: 1;
+            border: 1px solid var(--border-color);
+            border-radius: 22px; /* Pill shape */
+            padding: 10px 18px;
+            font-size: 1em;
+            resize: none; /* Disable manual resize */
+            overflow-y: hidden; /* Hide scrollbar but allow content to flow */
+            min-height: 44px; /* Match button height */
+            max-height: 150px; /* Limit max height for auto-grow */
+            line-height: 1.5;
+        }
+
+        #user-input:focus {
+            outline: none;
+            border-color: var(--button-primary-bg);
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: row; /* Keep flex-row, sidebar will overlay */
+            }
+
+            .sidebar {
+                position: fixed;
+                height: 100%;
+                left: 0;
+                top: 0;
+                transform: translateX(-100%);
+                box-shadow: 3px 0 10px rgba(0,0,0,0.2);
+                width: 250px; /* Slightly narrower sidebar on mobile */
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .mobile-menu-toggle {
+                display: block; /* Show menu toggle button */
+            }
+
+            .chat-header {
+                padding-left: 15px; /* Adjust padding for menu button */
+            }
+
+            .chat-header h2 {
+                flex-grow: 1; /* Allow title to take available space */
+                text-align: center;
+            }
+
+            .input-area {
+                padding: 10px 15px;
+                gap: 8px;
+            }
+
+            #user-input {
+                min-height: 40px; /* Slightly smaller input on mobile */
+                padding: 8px 15px;
+            }
+
+            .image-upload-button, #send-button {
+                width: 40px;
+                height: 40px;
+            }
+
+            .image-upload-button svg, #send-button svg {
+                width: 22px;
+                height: 22px;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="sidebar">
-<h2>Arix!</h2>
-<button onclick="newChat()">새 채팅</button>
-<div class="version">Arix v1.0</div>
-</div>
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <div class="logo-area">
+                <div class="logo">
+                    <!-- Arix! Logo SVG -->
+                    <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="0" y="0" width="100" height="100" rx="20" fill="var(--navy-dark)"/>
+                        <path d="M30 70 L50 30 L70 70 H60 L50 50 L40 70 Z" fill="var(--accent-yellow)"/>
+                        <circle cx="75" cy="25" r="10" fill="var(--accent-blue)"/>
+                    </svg>
+                    <h1>Arix!</h1>
+                </div>
+            </div>
+            <button class="new-chat-button" id="new-chat-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus-circle"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                새 채팅
+            </button>
+            <div class="chat-list">
+                <h2>나의 Arix들</h2>
+                <ul id="conversation-list">
+                    <!-- Example Chat Items -->
+                    <li class="chat-item active" data-id="1">
+                        <span>첫 번째 대화</span>
+                        <div class="chat-actions">
+                            <button class="edit-chat-button" title="대화 이름 변경">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-edit"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                            <button class="delete-chat-button" title="대화 삭제">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
+                        </div>
+                    </li>
+                    <li class="chat-item" data-id="2">
+                        <span>Arix와 아이디어 브레인스토밍</span>
+                        <div class="chat-actions">
+                            <button class="edit-chat-button" title="대화 이름 변경">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-edit"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                            <button class="delete-chat-button" title="대화 삭제">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+        <main class="chat-area">
+            <header class="chat-header">
+                <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+                </button>
+                <h2 id="current-chat-title">첫 번째 대화</h2>
+            </header>
+            <div class="messages-display" id="messages-display">
+                <!-- Chat messages will be dynamically added here -->
+                <div class="message ai-message">
+                    <div class="message-content">안녕하세요! Arix입니다. 무엇을 도와드릴까요?</div>
+                </div>
+                <div class="message user-message">
+                    <div class="message-content">음... 좋은 아이디어를 얻고 싶어요!</div>
+                </div>
+            </div>
+            <div class="input-area">
+                <button class="image-upload-button" title="이미지 추가">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image-plus"><path d="M12 5v14"/><path d="M5 12h14"/><path d="M21 12V3h-9l-3 3H3v12a2 2 0 0 0 2 2h7"/></svg>
+                </button>
+                <textarea id="user-input" placeholder="Arix!에게 메시지를 입력하세요..." rows="1"></textarea>
+                <button id="send-button" title="보내기">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+            </div>
+        </main>
+    </div>
 
-<div class="chat-area">
-<div class="header">Arix AI</div>
-<div class="messages" id="messages"></div>
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const newChatButton = document.getElementById('new-chat-button');
+        const conversationList = document.getElementById('conversation-list');
+        const messagesDisplay = document.getElementById('messages-display');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const currentChatTitle = document.getElementById('current-chat-title');
 
-<div class="input-area">
-<textarea id="input" placeholder="메시지 입력"></textarea>
-<button id="send" onclick="sendMessage()">전송</button>
-</div>
-</div>
+        let chatCounter = 3; // Start from 3 because 2 example chats exist
 
-<script>
-const messages=document.getElementById("messages");
+        // --- Sidebar Toggle for Mobile ---
+        mobileMenuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
 
-function saveMessages(){
- localStorage.setItem("arix_messages",messages.innerHTML);
-}
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (event) => {
+            if (window.innerWidth <= 768 && sidebar.classList.contains('active') && !sidebar.contains(event.target) && !mobileMenuToggle.contains(event.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
 
-function loadMessages(){
- const d=localStorage.getItem("arix_messages");
- if(d) messages.innerHTML=d;
-}
+        // --- Chat Management Functions ---
+        function createChatItem(id, title, isActive = false) {
+            const listItem = document.createElement('li');
+            listItem.classList.add('chat-item');
+            if (isActive) {
+                listItem.classList.add('active');
+            }
+            listItem.dataset.id = id;
+            listItem.innerHTML = `
+                <span>${title}</span>
+                <div class="chat-actions">
+                    <button class="edit-chat-button" title="대화 이름 변경">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-edit"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="delete-chat-button" title="대화 삭제">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    </button>
+                </div>
+            `;
+            return listItem;
+        }
 
-function addMessage(text,type){
- const div=document.createElement("div");
- div.className="message "+type;
- div.textContent=text;
- messages.appendChild(div);
- messages.scrollTop=messages.scrollHeight;
- saveMessages();
-}
+        function selectChat(selectedItem) {
+            document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+            selectedItem.classList.add('active');
+            currentChatTitle.textContent = selectedItem.querySelector('span').textContent;
+            // In a real app, you'd load messages for this chat ID
+            messagesDisplay.innerHTML = `<div class="message ai-message"><div class="message-content">새로운 대화 ${selectedItem.dataset.id}에 오신 것을 환영합니다!</div></div>`;
+            messagesDisplay.scrollTop = messagesDisplay.scrollHeight; // Scroll to bottom
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('active'); // Close sidebar after selection on mobile
+            }
+        }
 
-function newChat(){
- if(confirm("새 채팅을 시작할까요?")){
-   messages.innerHTML="";
-   saveMessages();
- }
-}
+        function deleteChat(itemToDelete) {
+            itemToDelete.remove();
+            // Handle active chat if deleted
+            if (itemToDelete.classList.contains('active')) {
+                const firstChat = conversationList.querySelector('.chat-item');
+                if (firstChat) {
+                    selectChat(firstChat);
+                } else {
+                    currentChatTitle.textContent = "새로운 대화 시작";
+                    messagesDisplay.innerHTML = `<div class="message ai-message"><div class="message-content">왼쪽 '새 채팅' 버튼을 눌러 Arix와 대화를 시작해보세요!</div></div>`;
+                }
+            }
+        }
 
-async function askArix(message){
- const res=await fetch("https://YOUR-RENDER-URL/chat",{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({message})
- });
- const data=await res.json();
- return data.reply || data.response || "응답 없음";
-}
+        function editChat(itemToEdit) {
+            const span = itemToEdit.querySelector('span');
+            const originalText = span.textContent;
+            span.innerHTML = `<input type="text" value="${originalText}" class="edit-chat-input">`;
+            const input = span.querySelector('.edit-chat-input');
+            input.focus();
+            input.select();
 
-async function sendMessage(){
- const input=document.getElementById("input");
- const text=input.value.trim();
- if(!text) return;
+            const saveChanges = () => {
+                const newText = input.value.trim();
+                if (newText && newText !== originalText) {
+                    span.textContent = newText;
+                    if (itemToEdit.classList.contains('active')) {
+                        currentChatTitle.textContent = newText;
+                    }
+                } else {
+                    span.textContent = originalText;
+                }
+                input.removeEventListener('blur', saveChanges);
+                input.removeEventListener('keypress', handleKeyPress);
+            };
 
- addMessage(text,"user");
- input.value="";
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter') {
+                    input.blur(); // Trigger blur to save changes
+                }
+            };
 
- const loading=document.createElement("div");
- loading.className="message ai";
- loading.id="loading";
- loading.textContent="Arix 생각중...";
- messages.appendChild(loading);
+            input.addEventListener('blur', saveChanges);
+            input.addEventListener('keypress', handleKeyPress);
+        }
 
- try{
-   const reply=await askArix(text);
-   document.getElementById("loading")?.remove();
-   addMessage(reply,"ai");
- }catch(e){
-   document.getElementById("loading")?.remove();
-   addMessage("서버 오류 😥","ai");
- }
-}
+        // --- Event Listeners for Chat Management ---
+        newChatButton.addEventListener('click', () => {
+            chatCounter++;
+            const newChat = createChatItem(chatCounter, `새로운 대화 ${chatCounter}`);
+            conversationList.prepend(newChat); // Add to top
+            selectChat(newChat);
+        });
 
-loadMessages();
-</script>
+        conversationList.addEventListener('click', (event) => {
+            const chatItem = event.target.closest('.chat-item');
+            if (!chatItem) return;
+
+            if (event.target.closest('.delete-chat-button')) {
+                event.stopPropagation(); // Prevent selecting the chat when deleting
+                if (confirm('이 대화를 정말 삭제하시겠습니까?')) {
+                    deleteChat(chatItem);
+                }
+            } else if (event.target.closest('.edit-chat-button')) {
+                event.stopPropagation(); // Prevent selecting the chat when editing
+                editChat(chatItem);
+            } else {
+                selectChat(chatItem);
+            }
+        });
+
+        // --- Message Sending Functionality ---
+        function addMessageToDisplay(text, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', `${type}-message`);
+            messageDiv.innerHTML = `<div class="message-content">${text}</div>`;
+            messagesDisplay.appendChild(messageDiv);
+            messagesDisplay.scrollTop = messagesDisplay.scrollHeight; // Scroll to bottom
+        }
+
+        sendButton.addEventListener('click', () => {
+            const messageText = userInput.value.trim();
+            if (messageText) {
+                addMessageToDisplay(messageText, 'user');
+                userInput.value = '';
+                adjustTextareaHeight(userInput); // Reset height after sending
+                // Simulate AI response (replace with actual AI logic later)
+                setTimeout(() => {
+                    addMessageToDisplay('음... 당신의 아이디어를 자세히 말해주세요!', 'ai');
+                }, 1000);
+            }
+        });
+
+        userInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); // Prevent new line
+                sendButton.click();
+            }
+        });
+
+        // --- Textarea Auto-resize ---
+        function adjustTextareaHeight(textarea) {
+            textarea.style.height = 'auto'; // Reset height to recalculate
+            textarea.style.height = (textarea.scrollHeight) + 'px';
+            // Limit to max-height defined in CSS
+            if (textarea.scrollHeight > parseInt(getComputedStyle(textarea).maxHeight)) {
+                textarea.style.overflowY = 'auto';
+            } else {
+                textarea.style.overflowY = 'hidden';
+            }
+        }
+
+        userInput.addEventListener('input', () => adjustTextareaHeight(userInput));
+
+        // Initial setup for existing chat items
+        document.addEventListener('DOMContentLoaded', () => {
+            const firstChatItem = conversationList.querySelector('.chat-item');
+            if (firstChatItem) {
+                selectChat(firstChatItem); // Select the first chat on load
+            }
+            adjustTextareaHeight(userInput); // Adjust initial textarea height
+        });
+    </script>
 </body>
 </html>
